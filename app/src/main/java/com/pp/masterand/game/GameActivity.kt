@@ -19,7 +19,7 @@ data class GameRowData(
 
 @Composable
 fun GameScreen() {
-    val historyRows: MutableList<List<Color>> = rememberSaveable { mutableListOf() }
+    var historyRows: MutableList<List<Color>> = rememberSaveable { mutableListOf() }
     val availableColors = listOf(Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Cyan, Color.Magenta)
     val randomlySelectedColor = rememberSaveable { selectRandomColors(availableColors) }
 
@@ -76,7 +76,7 @@ fun GameLogic(availableColors: List<Color>, correctColors: List<Color>, historyR
                             selectedColors = selectNextAvailableColor(availableColors, selectedColors, index)
                         },
                         onCheckClick = {
-                            historyRows.add(selectedColors)
+                            historyRows.apply { add(selectedColors) }
                             feedbackColors = checkColors(selectedColors, correctColors, Color.Gray)
                             score = countMatches(selectedColors, feedbackColors)
                             gameWon = feedbackColors.all { it == Color.Red }
