@@ -8,14 +8,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
-import com.pp.masterand.game.GameScreen
-import com.pp.masterand.game.selectRandomColors
-import com.pp.masterand.profile.ProfileScreenInitial
+import androidx.navigation.NavHostController
 import com.pp.masterand.ui.theme.MasterAndTheme
+import androidx.navigation.compose.rememberNavController
+import com.pp.masterand.login.LoginActivity
+import com.pp.masterand.nav.SetupNavGraph
 
 class MainActivity : ComponentActivity() {
+
+    lateinit var navController: NavHostController
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -24,7 +27,12 @@ class MainActivity : ComponentActivity() {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
 //                    ProfileScreenInitial()
 
-                    GameScreen()
+                    //GameScreen()
+
+                    navController = rememberNavController()
+
+                    //Funkcja odpowiedziana za powiązania między kolejnymi ekranami
+                    SetupNavGraph(navController = navController)
                 }
             }
         }
@@ -34,5 +42,7 @@ class MainActivity : ComponentActivity() {
 @Preview
 @Composable
 fun MainActivityPreview() {
-    ProfileScreenInitial()
+    // Create a NavController instance (for preview purposes only)
+    val navController = rememberNavController()
+    LoginActivity(navController = navController)
 }

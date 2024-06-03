@@ -1,7 +1,6 @@
-package com.pp.masterand.profile
+package com.pp.masterand.login
 
 import android.net.Uri
-import android.util.MutableBoolean
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
