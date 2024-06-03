@@ -50,7 +50,9 @@ fun GameRow(
             )
         }
         Spacer(modifier = Modifier.width(16.dp))
-        FeedbackCircles(colors = feedbackColors)
+        if (!clickable) {
+            FeedbackCircles(colors = feedbackColors)
+        }
     }
 }
 
@@ -139,6 +141,21 @@ fun GameRowPreview() {
         selectedColors = selectedColors,
         feedbackColors = feedbackColors,
         clickable = true,
+        onSelectColorClick = {},
+        onCheckClick = {}
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun GameRowClickableFalsePreview() {
+    val selectedColors = listOf(Color.Red, Color.Blue, Color.Green, Color.Yellow)
+    val feedbackColors = listOf(Color.Red, Color.Magenta, Color.Yellow, Color.Blue)
+
+    GameRow(
+        selectedColors = selectedColors,
+        feedbackColors = feedbackColors,
+        clickable = false,
         onSelectColorClick = {},
         onCheckClick = {}
     )

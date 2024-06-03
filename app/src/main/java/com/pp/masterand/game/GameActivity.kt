@@ -19,7 +19,7 @@ data class GameRowData(
 
 @Composable
 fun GameScreen() {
-    val historyRows = rememberSaveable { mutableStateListOf<List<Color>>() }
+    val historyRows: MutableList<List<Color>> = rememberSaveable { mutableListOf() }
     val availableColors = listOf(Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Cyan, Color.Magenta)
     val randomlySelectedColor = rememberSaveable { selectRandomColors(availableColors) }
 
@@ -54,22 +54,6 @@ fun GameLogic(availableColors: List<Color>, correctColors: List<Color>, historyR
                     HistoryRow(historyRow, correctColors)
                 }
             }
-            item {
-                GameRow(
-                    selectedColors = selectedColors,
-                    feedbackColors = feedbackColors,
-                    clickable = !gameWon,
-                    onSelectColorClick = { index ->
-                        selectedColors = selectNextAvailableColor(availableColors, selectedColors, index)
-                    },
-                    onCheckClick = {
-                        historyRows.add(selectedColors)
-                        feedbackColors = checkColors(selectedColors, correctColors, Color.Gray)
-                        score = countMatches(selectedColors, feedbackColors)
-                        gameWon = feedbackColors.all { it == Color.Red }
-                    }
-                )
-            }
             if (gameWon) {
                 item {
                     Button(onClick = {
@@ -77,9 +61,27 @@ fun GameLogic(availableColors: List<Color>, correctColors: List<Color>, historyR
                         selectedColors = List(4) { availableColors[it] }
                         feedbackColors = List(4) { Color.Gray }
                         gameWon = false
+                        score = 0
                     }) {
                         Text("Restart Game")
                     }
+                }
+            } else {
+                item {
+                    GameRow(
+                        selectedColors = selectedColors,
+                        feedbackColors = feedbackColors,
+                        clickable = !gameWon,
+                        onSelectColorClick = { index ->
+                            selectedColors = selectNextAvailableColor(availableColors, selectedColors, index)
+                        },
+                        onCheckClick = {
+                            historyRows.add(selectedColors)
+                            feedbackColors = checkColors(selectedColors, correctColors, Color.Gray)
+                            score = countMatches(selectedColors, feedbackColors)
+                            gameWon = feedbackColors.all { it == Color.Red }
+                        }
+                    )
                 }
             }
         }
