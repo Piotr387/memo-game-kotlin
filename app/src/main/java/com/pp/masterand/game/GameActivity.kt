@@ -2,7 +2,10 @@ package com.pp.masterand.game
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.*
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -24,19 +27,33 @@ data class GameRowData(
 fun GameScreen(
     navController: NavController
 ) {
-    var historyRows: MutableList<List<Color>> = rememberSaveable { mutableListOf() }
-    val availableColors = listOf(Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Cyan, Color.Magenta)
-    val randomlySelectedColor = rememberSaveable { selectRandomColors(availableColors) }
+    val availableColors = listOf(
+        Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Cyan,
+        Color.Magenta, Color.White, Color.Black, Color.Gray, Color.LightGray
+    )
 
-    GameLogic(navController, availableColors, randomlySelectedColor, historyRows)
+    val userSelectedNumberOfColor = rememberSaveable { availableColors.shuffled().take(6).map { it.copy() } }
+    val correctColorsRandomlySelected = rememberSaveable { selectRandomColors(userSelectedNumberOfColor) }
+    val historyRows = rememberSaveable { mutableMapOf<Int, List<Color>>() }
+
+    GameLogic( //
+        navController = navController, //
+        userSelectedNumberOfColor = userSelectedNumberOfColor, //
+        correctColorsRandomlySelected = correctColorsRandomlySelected, //
+        historyRows = historyRows
+    )
 }
 
 @Composable
-fun GameLogic(navController: NavController, availableColors: List<Color>, correctColors: List<Color>, historyRows: MutableList<List<Color>>) {
-
-    var selectedColors by rememberSaveable { mutableStateOf(List(4) { availableColors[it] }) }
+fun GameLogic(
+    navController: NavController,
+    userSelectedNumberOfColor: List<Color>,
+    correctColorsRandomlySelected: List<Color>,
+    historyRows: MutableMap<Int, List<Color>>
+) {
+    var selectedColors by rememberSaveable { mutableStateOf(List(4) { userSelectedNumberOfColor[it] }) }
     var feedbackColors by rememberSaveable { mutableStateOf(List(4) { Color.Gray }) }
-    var score by rememberSaveable { mutableStateOf(0) }
+    var score by rememberSaveable { mutableIntStateOf(0) }
     var gameWon by rememberSaveable { mutableStateOf(false) }
 
     Box(
@@ -61,14 +78,14 @@ fun GameLogic(navController: NavController, availableColors: List<Color>, correc
             ) {
                 historyRows.forEach { historyRow ->
                     item {
-                        HistoryRow(historyRow, correctColors)
+                        HistoryRow(historyRow.value, correctColorsRandomlySelected)
                     }
                 }
                 if (gameWon) {
                     item {
                         Button(onClick = {
                             historyRows.clear()
-                            selectedColors = List(4) { availableColors[it] }
+                            selectedColors = List(4) { userSelectedNumberOfColor[it] }
                             feedbackColors = List(4) { Color.Gray }
                             gameWon = false
                             score = 0
@@ -84,11 +101,12 @@ fun GameLogic(navController: NavController, availableColors: List<Color>, correc
                             feedbackColors = feedbackColors,
                             clickable = !gameWon,
                             onSelectColorClick = { index ->
-                                selectedColors = selectNextAvailableColor(availableColors, selectedColors, index)
+                                selectedColors =
+                                    selectNextAvailableColor(userSelectedNumberOfColor, selectedColors, index)
                             },
                             onCheckClick = {
-                                historyRows.add(selectedColors)
-                                feedbackColors = checkColors(selectedColors, correctColors, Color.Gray)
+                                addToHistoryMap(historyRows = historyRows, colorHistoryToAdd = selectedColors)
+                                feedbackColors = checkColors(selectedColors, correctColorsRandomlySelected, Color.Gray)
                                 score = countMatches(selectedColors, feedbackColors)
                                 gameWon = feedbackColors.all { it == Color.Red }
                             }
@@ -109,91 +127,57 @@ fun GameLogic(navController: NavController, availableColors: List<Color>, correc
     }
 }
 
+// Function to add values to the map with auto-incremented keys
+fun addToHistoryMap(historyRows: MutableMap<Int, List<Color>>, colorHistoryToAdd: List<Color>) {
+    val newKey = historyRows.size
+    historyRows[newKey] = colorHistoryToAdd
+}
+
 @Composable
-fun HistoryRow(historyRow: List<Color>, correctColors: List<Color>) {
+fun HistoryRow(historyRow: List<Color>, correctColorsRandomlySelected: List<Color>) {
     GameRow(
         selectedColors = historyRow,
-        feedbackColors = checkColors(historyRow, correctColors, Color.Gray),
+        feedbackColors = checkColors(historyRow, correctColorsRandomlySelected, Color.Gray),
         clickable = false,
         onSelectColorClick = {},
         onCheckClick = {}
     )
 }
 
-@Preview(showBackground = true)
-@Composable
-fun GameLogicPreview() {
-
-    val historyRows: MutableList<List<Color>> = mutableListOf(
-        listOf(
-            Color.Magenta,
-            Color.Cyan,
-            Color.Yellow,
-            Color.Green
-        ),
-        listOf(
-            Color.Yellow,
-            Color.Green,
-            Color.Cyan,
-            Color.Magenta
-        ),
-        listOf(
-            Color.Yellow,
-            Color.Green,
-            Color.Cyan,
-            Color.Magenta
-        ),
-        listOf(
-            Color.Magenta,
-            Color.Cyan,
-            Color.Yellow,
-            Color.Green
-        ),
-        listOf(
-            Color.Yellow,
-            Color.Green,
-            Color.Cyan,
-            Color.Magenta
-        ),
-        listOf(
-            Color.Yellow,
-            Color.Green,
-            Color.Cyan,
-            Color.Magenta
-        ),
-        listOf(
-            Color.Magenta,
-            Color.Cyan,
-            Color.Yellow,
-            Color.Green
-        ),
-        listOf(
-            Color.Yellow,
-            Color.Green,
-            Color.Cyan,
-            Color.Magenta
-        ),
-        listOf(
-            Color.Yellow,
-            Color.Green,
-            Color.Cyan,
-            Color.Magenta
-        )
-    )
-
-    val availableColors = listOf(Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Cyan, Color.Magenta)
-    val randomlySelectedColor = listOf(
-        Color.Red,
-        Color.Blue,
-        Color.Green,
-        Color.Yellow
-    )
-
-    // Create a NavController instance (for preview purposes only)
-    val navController = rememberNavController()
-
-    GameLogic(navController, availableColors, randomlySelectedColor, historyRows)
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun GameLogicPreview() {
+//
+//    val historyRows = rememberSaveable { mutableStateOf(mutableListOf<List<Color>>()) }
+//    historyRows.value.add(listOf(Color.Magenta, Color.Cyan, Color.Yellow, Color.Green))
+//    historyRows.value.add(listOf(Color.Magenta, Color.Cyan, Color.Yellow, Color.Green))
+//    historyRows.value.add(listOf(Color.Yellow, Color.Green, Color.Cyan, Color.Magenta))
+//    historyRows.value.add(listOf(Color.Yellow, Color.Green, Color.Cyan, Color.Magenta))
+//    historyRows.value.add(listOf(Color.Yellow, Color.Green, Color.Cyan, Color.Magenta))
+//    historyRows.value.add(listOf(Color.Yellow, Color.Green, Color.Cyan, Color.Magenta))
+//    historyRows.value.add(listOf(Color.Yellow, Color.Green, Color.Cyan, Color.Magenta))
+//    historyRows.value.add(listOf(Color.Yellow, Color.Green, Color.Cyan, Color.Magenta))
+//    historyRows.value.add(listOf(Color.Yellow, Color.Green, Color.Cyan, Color.Magenta))
+//    historyRows.value.add(listOf(Color.Yellow, Color.Green, Color.Cyan, Color.Magenta))
+//
+//    val userSelectedNumberOfColor = listOf(Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Cyan, Color.Magenta)
+//    val correctColorsRandomlySelected = listOf(
+//        Color.Red,
+//        Color.Blue,
+//        Color.Green,
+//        Color.Yellow
+//    )
+//
+//    // Create a NavController instance (for preview purposes only)
+//    val navController = rememberNavController()
+//
+//    GameLogic( //
+//        navController = navController, //
+//        userSelectedNumberOfColor = userSelectedNumberOfColor, //
+//        correctColorsRandomlySelected = correctColorsRandomlySelected, //
+//        historyRows = historyRows
+//    )
+//}
 
 @Preview(showBackground = true)
 @Composable
