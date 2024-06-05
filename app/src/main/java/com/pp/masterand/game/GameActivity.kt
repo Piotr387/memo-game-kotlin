@@ -2,7 +2,7 @@ package com.pp.masterand.game
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -72,6 +72,11 @@ fun GameLogic(
     var feedbackForUserAboutPickedColors by rememberSaveable { mutableStateOf(List(4) { Color.Gray }) }
     var score by rememberSaveable { mutableIntStateOf(0) }
     var gameWon by rememberSaveable { mutableStateOf(false) }
+    var triggerRecomposition by remember { mutableStateOf(false) }
+
+    LaunchedEffect(key1 = triggerRecomposition) { // Replace key1 with a unique identifier if needed
+        triggerRecomposition = !triggerRecomposition  // Toggle the state to trigger recomposition
+    }
 
     Column(
         modifier = Modifier
@@ -84,9 +89,11 @@ fun GameLogic(
             style = MaterialTheme.typography.headlineMedium
         )
 
+        var listState = rememberLazyListState()
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            state = listState
         ) {
             historyRows.forEach { historyRow ->
                 item {
@@ -97,6 +104,7 @@ fun GameLogic(
                 item {
                     Button(onClick = {
                         historyRows.clear()
+                        triggerRecomposition = !triggerRecomposition
                         userSelectedColors = List(4) { colorsInPoolAfterLimit[it] }
                         feedbackForUserAboutPickedColors = List(4) { Color.Gray }
                         gameWon = false
@@ -117,10 +125,12 @@ fun GameLogic(
                         },
                         onCheckClick = {
                             addToHistoryMap(historyRows = historyRows, colorHistoryToAdd = userSelectedColors)
+                            triggerRecomposition = !triggerRecomposition
                             feedbackForUserAboutPickedColors =
                                 checkColors(userSelectedColors, correctColorsFromPool, Color.Gray)
                             score = countMatches(userSelectedColors, correctColorsFromPool)
                             gameWon = feedbackForUserAboutPickedColors.all { it == Color.Red }
+
                         }
                     )
                 }
