@@ -32,6 +32,10 @@ fun LoginActivity(
     val email = rememberSaveable { mutableStateOf("") }
     val number = rememberSaveable { mutableStateOf("") }
 
+    val isNameValid = rememberSaveable { mutableStateOf(false) }
+    val isEmailValid = rememberSaveable { mutableStateOf(false) }
+    val isNumberValid = rememberSaveable { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -66,14 +70,22 @@ fun LoginActivity(
             value = name,
             label = "Name",
             supportingText = "Name can't be empty",
-            validator = { it.isNotEmpty() }
+            validator = {
+                val isValid = it.isNotEmpty()
+                isNameValid.value = isValid
+                isValid
+            }
         )
 
         OutlinedTextFieldWithError(
             value = email,
             label = "Email",
             supportingText = "Email can't be empty",
-            validator = { it.isNotEmpty() }
+            validator = {
+                val isValid = it.isNotEmpty()
+                isEmailValid.value = isValid
+                isValid
+            }
         )
 
         OutlinedTextFieldWithError(
@@ -85,16 +97,23 @@ fun LoginActivity(
                 try {
                     val num = text.toIntOrNull() // Handle non-numeric input
                     if (IntRange(5, 10).contains(num)) {
+                        isNumberValid.value = true
                         return@OutlinedTextFieldWithError true // Valid number
                     }
                 } catch (e: NumberFormatException) {
-                    return@OutlinedTextFieldWithError true // Valid number
+                    isNumberValid.value = false
+                    return@OutlinedTextFieldWithError false // Invalid number
                 }
+                isNumberValid.value = false
                 return@OutlinedTextFieldWithError false // Invalid number
             }
         )
+        if (isNameValid.value && isEmailValid.value && isNumberValid.value) {
+            StartGameButton {
+                navController.navigate(Screen.GameScreen.route + "/${number.value.toInt()}")
+            }
+        }
 
-        StartGameButton { navController.navigate(route = Screen.GameScreen.route) }
     }
 }
 

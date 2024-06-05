@@ -25,104 +25,106 @@ data class GameRowData(
 
 @Composable
 fun GameScreen(
-    navController: NavController
+    navController: NavController,
+    numberOfColorsInPool: Int,
+    onLogoutButtonAction: () -> Unit
 ) {
     val availableColors = listOf(
         Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Cyan,
         Color.Magenta, Color.White, Color.Black, Color.Gray, Color.LightGray
     )
 
-    val userSelectedNumberOfColor = rememberSaveable { availableColors.shuffled().take(6).map { it.copy() } }
-    val correctColorsRandomlySelected = rememberSaveable { selectRandomColors(userSelectedNumberOfColor) }
+    val colorsInPoolAfterLimit =
+        rememberSaveable { availableColors.shuffled().take(numberOfColorsInPool).map { it.copy() } }
+    val correctColorsFromPool = rememberSaveable { selectRandomColors(colorsInPoolAfterLimit) }
     val historyRows = rememberSaveable { mutableMapOf<Int, List<Color>>() }
-
-    GameLogic( //
-        navController = navController, //
-        userSelectedNumberOfColor = userSelectedNumberOfColor, //
-        correctColorsRandomlySelected = correctColorsRandomlySelected, //
-        historyRows = historyRows
-    )
-}
-
-@Composable
-fun GameLogic(
-    navController: NavController,
-    userSelectedNumberOfColor: List<Color>,
-    correctColorsRandomlySelected: List<Color>,
-    historyRows: MutableMap<Int, List<Color>>
-) {
-    var selectedColors by rememberSaveable { mutableStateOf(List(4) { userSelectedNumberOfColor[it] }) }
-    var feedbackColors by rememberSaveable { mutableStateOf(List(4) { Color.Gray }) }
-    var score by rememberSaveable { mutableIntStateOf(0) }
-    var gameWon by rememberSaveable { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 64.dp), // Space for the Logout button
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Text(
-                "Your score: $score",
-                style = MaterialTheme.typography.headlineMedium
-            )
-
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                historyRows.forEach { historyRow ->
-                    item {
-                        HistoryRow(historyRow.value, correctColorsRandomlySelected)
-                    }
-                }
-                if (gameWon) {
-                    item {
-                        Button(onClick = {
-                            historyRows.clear()
-                            selectedColors = List(4) { userSelectedNumberOfColor[it] }
-                            feedbackColors = List(4) { Color.Gray }
-                            gameWon = false
-                            score = 0
-                            navController.navigate(route = Screen.ProfileScreen.route)
-                        }) {
-                            Text("High Score Table")
-                        }
-                    }
-                } else {
-                    item {
-                        GameRow(
-                            selectedColors = selectedColors,
-                            feedbackColors = feedbackColors,
-                            clickable = !gameWon,
-                            onSelectColorClick = { index ->
-                                selectedColors =
-                                    selectNextAvailableColor(userSelectedNumberOfColor, selectedColors, index)
-                            },
-                            onCheckClick = {
-                                addToHistoryMap(historyRows = historyRows, colorHistoryToAdd = selectedColors)
-                                feedbackColors = checkColors(selectedColors, correctColorsRandomlySelected, Color.Gray)
-                                score = countMatches(selectedColors, feedbackColors)
-                                gameWon = feedbackColors.all { it == Color.Red }
-                            }
-                        )
-                    }
-                }
-            }
-        }
-
+        GameLogic( //
+            navController = navController, //
+            colorsInPoolAfterLimit = colorsInPoolAfterLimit, //
+            correctColorsFromPool = correctColorsFromPool, //
+            historyRows = historyRows
+        )
         Button(
-            onClick = { navController.navigate(route = Screen.LoginScreen.route) },
+            onClick = onLogoutButtonAction,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 4.dp)
         ) {
             Text("Logout")
+        }
+    }
+}
+
+@Composable
+fun GameLogic(
+    navController: NavController,
+    colorsInPoolAfterLimit: List<Color>,
+    correctColorsFromPool: List<Color>,
+    historyRows: MutableMap<Int, List<Color>>
+) {
+    var userSelectedColors by rememberSaveable { mutableStateOf(List(4) { colorsInPoolAfterLimit[it] }) }
+    var feedbackForUserAboutPickedColors by rememberSaveable { mutableStateOf(List(4) { Color.Gray }) }
+    var score by rememberSaveable { mutableIntStateOf(0) }
+    var gameWon by rememberSaveable { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = 64.dp), // Space for the Logout button
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            "Your score: $score",
+            style = MaterialTheme.typography.headlineMedium
+        )
+
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            historyRows.forEach { historyRow ->
+                item {
+                    HistoryRow(historyRow.value, correctColorsFromPool)
+                }
+            }
+            if (gameWon) {
+                item {
+                    Button(onClick = {
+                        historyRows.clear()
+                        userSelectedColors = List(4) { colorsInPoolAfterLimit[it] }
+                        feedbackForUserAboutPickedColors = List(4) { Color.Gray }
+                        gameWon = false
+                        navController.navigate(route = Screen.ProfileScreen.route + "/$score")
+                    }) {
+                        Text("High Score Table")
+                    }
+                }
+            } else {
+                item {
+                    GameRow(
+                        selectedColors = userSelectedColors,
+                        feedbackColors = feedbackForUserAboutPickedColors,
+                        clickable = !gameWon,
+                        onSelectColorClick = { index ->
+                            userSelectedColors =
+                                selectNextAvailableColor(colorsInPoolAfterLimit, userSelectedColors, index)
+                        },
+                        onCheckClick = {
+                            addToHistoryMap(historyRows = historyRows, colorHistoryToAdd = userSelectedColors)
+                            feedbackForUserAboutPickedColors =
+                                checkColors(userSelectedColors, correctColorsFromPool, Color.Gray)
+                            score = countMatches(userSelectedColors, correctColorsFromPool)
+                            gameWon = feedbackForUserAboutPickedColors.all { it == Color.Red }
+                        }
+                    )
+                }
+            }
         }
     }
 }
@@ -134,10 +136,10 @@ fun addToHistoryMap(historyRows: MutableMap<Int, List<Color>>, colorHistoryToAdd
 }
 
 @Composable
-fun HistoryRow(historyRow: List<Color>, correctColorsRandomlySelected: List<Color>) {
+fun HistoryRow(historyRow: List<Color>, correctColorsFromPool: List<Color>) {
     GameRow(
         selectedColors = historyRow,
-        feedbackColors = checkColors(historyRow, correctColorsRandomlySelected, Color.Gray),
+        feedbackColors = checkColors(historyRow, correctColorsFromPool, Color.Gray),
         clickable = false,
         onSelectColorClick = {},
         onCheckClick = {}
@@ -160,8 +162,8 @@ fun HistoryRow(historyRow: List<Color>, correctColorsRandomlySelected: List<Colo
 //    historyRows.value.add(listOf(Color.Yellow, Color.Green, Color.Cyan, Color.Magenta))
 //    historyRows.value.add(listOf(Color.Yellow, Color.Green, Color.Cyan, Color.Magenta))
 //
-//    val userSelectedNumberOfColor = listOf(Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Cyan, Color.Magenta)
-//    val correctColorsRandomlySelected = listOf(
+//    val colorsInPoolAfterLimit = listOf(Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Cyan, Color.Magenta)
+//    val correctColorsFromPool = listOf(
 //        Color.Red,
 //        Color.Blue,
 //        Color.Green,
@@ -173,8 +175,8 @@ fun HistoryRow(historyRow: List<Color>, correctColorsRandomlySelected: List<Colo
 //
 //    GameLogic( //
 //        navController = navController, //
-//        userSelectedNumberOfColor = userSelectedNumberOfColor, //
-//        correctColorsRandomlySelected = correctColorsRandomlySelected, //
+//        colorsInPoolAfterLimit = colorsInPoolAfterLimit, //
+//        correctColorsFromPool = correctColorsFromPool, //
 //        historyRows = historyRows
 //    )
 //}
@@ -186,7 +188,7 @@ fun GameScreenPreview() {
     val navController = rememberNavController()
 
     // Call GameScreen with the NavController parameter
-    GameScreen(navController = navController)
+    GameScreen(navController = navController, numberOfColorsInPool = 5, onLogoutButtonAction = {})
 }
 
 

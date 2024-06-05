@@ -27,8 +27,8 @@ fun selectRandomColors(availableColors: List<Color>): List<Color> {
     return availableColors.shuffled().take(4)
 }
 
-fun countMatches(selectedColors: List<Color>, feedbackColors: List<Color>): Int {
-    return feedbackColors.count { it in selectedColors }
+fun countMatches(userSelectedColors: List<Color>, correctColorsInPool: List<Color>): Int {
+    return userSelectedColors.count { it in correctColorsInPool }
 }
 
 fun checkColors(

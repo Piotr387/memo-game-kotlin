@@ -2,7 +2,6 @@ package com.pp.masterand.profile
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
@@ -10,7 +9,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -18,7 +16,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.pp.masterand.R
-import com.pp.masterand.game.*
 import com.pp.masterand.nav.Screen
 
 class Profile(val login: String, val description: String)
@@ -52,7 +49,12 @@ fun ProfileCard() {
 }
 
 @Composable
-fun ProfileWithScoreTable(navController: NavController) {
+fun ProfileWithScoreTable(
+    navController: NavController,
+    scoreNumber: Int,
+    onButtonClicked: () -> Unit,
+    onLogoutButtonAction: () -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -70,7 +72,7 @@ fun ProfileWithScoreTable(navController: NavController) {
                 style = MaterialTheme.typography.headlineLarge
             )
             Text(
-                "Recent score: 4",
+                "Recent score: $scoreNumber",
                 style = MaterialTheme.typography.headlineMedium
             )
         }
@@ -82,12 +84,12 @@ fun ProfileWithScoreTable(navController: NavController) {
                 .padding(bottom = 16.dp) // Padding to provide some space from the bottom edge
         ) {
             Button(
-                onClick = { navController.navigate(route = Screen.GameScreen.route) }
+                onClick = onButtonClicked
             ) {
                 Text("Restart Game")
             }
             Button(
-                onClick = { navController.navigate(route = Screen.LoginScreen.route) }
+                onClick = onLogoutButtonAction
             ) {
                 Text("Logout")
             }
@@ -113,6 +115,6 @@ fun PreviewProfileCard() {
 @Composable
 fun ProfileWithScoreTablePreview() {
     val navController = rememberNavController()
-    ProfileWithScoreTable(navController = navController)
+    ProfileWithScoreTable(navController = navController, scoreNumber = 4, onButtonClicked = {}, onLogoutButtonAction = {})
 }
 

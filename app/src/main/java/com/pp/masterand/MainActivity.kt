@@ -25,12 +25,7 @@ class MainActivity : ComponentActivity() {
             MasterAndTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-//                    ProfileScreenInitial()
-
-                    //GameScreen()
-
                     navController = rememberNavController()
-
                     //Funkcja odpowiedziana za powiązania między kolejnymi ekranami
                     SetupNavGraph(navController = navController)
                 }
