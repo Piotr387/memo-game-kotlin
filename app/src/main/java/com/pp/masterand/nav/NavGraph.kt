@@ -1,6 +1,8 @@
 package com.pp.masterand.nav
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -17,10 +19,9 @@ fun SetupNavGraph(navController: NavHostController) {
         startDestination = LOGIN_ROUTE
     ) {
 
-        val onLogoutButtonClick: () -> Unit = {navController.navigate(route = Screen.LoginScreen.route)}
+        val onLogoutButtonClick: () -> Unit = { navController.navigate(route = Screen.LoginScreen.route) }
 
         composable(route = Screen.LoginScreen.route) {
-            //Co ma się zdarzyć po przejściu do tego ekranu
             LoginActivity(navController = navController)
         }
 
@@ -31,7 +32,9 @@ fun SetupNavGraph(navController: NavHostController) {
 
             val numberOfColorsInPoolFromLoginActivity = backStackEntry.arguments?.getInt("numberOfColorsInPool")!!
 
-            GameScreen(navController = navController, numberOfColorsInPool = numberOfColorsInPoolFromLoginActivity,
+            GameScreen(
+                navController = navController,
+                numberOfColorsInPool = numberOfColorsInPoolFromLoginActivity,
                 onLogoutButtonAction = onLogoutButtonClick
             )
         }

@@ -112,6 +112,10 @@ fun LoginActivity(
             StartGameButton {
                 navController.navigate(Screen.GameScreen.route + "/${number.value.toInt()}")
             }
+        } else {
+            StartGameButton {
+                navController.navigate(Screen.GameScreen.route + "/${5}")
+            }
         }
 
     }

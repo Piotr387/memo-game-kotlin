@@ -23,6 +23,7 @@ data class GameRowData(
     val historyRows: List<List<Color>>
 )
 
+
 @Composable
 fun GameScreen(
     navController: NavController,
@@ -34,20 +35,42 @@ fun GameScreen(
         Color.Magenta, Color.White, Color.Black, Color.Gray, Color.LightGray
     )
 
-    val colorsInPoolAfterLimit =
-        rememberSaveable { availableColors.shuffled().take(numberOfColorsInPool).map { it.copy() } }
-    val correctColorsFromPool = rememberSaveable { selectRandomColors(colorsInPoolAfterLimit) }
+    // State variables to manage game state
+    var colorsInPoolAfterLimit by rememberSaveable { mutableStateOf(availableColors.shuffled().take(numberOfColorsInPool).map { it.copy() }) }
+    var correctColorsFromPool by rememberSaveable { mutableStateOf(selectRandomColors(colorsInPoolAfterLimit)) }
     val historyRows = rememberSaveable { mutableMapOf<Int, List<Color>>() }
+
+    // Define the reset function
+    val resetGame = {
+        historyRows.clear()
+        colorsInPoolAfterLimit = availableColors.shuffled().take(numberOfColorsInPool).map { it.copy() }
+        correctColorsFromPool = selectRandomColors(colorsInPoolAfterLimit)
+    }
+
+    // Effect to handle reset when navigating back
+    DisposableEffect(Unit) {
+        onDispose {
+            resetGame()
+        }
+    }
+
+    // Call the reset function directly if needed
+    LaunchedEffect(navController.currentBackStackEntry) {
+        val backStackEntry = navController.previousBackStackEntry
+        if (backStackEntry?.destination?.route == Screen.ProfileScreen.route) {
+            resetGame()
+        }
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        GameLogic( //
-            navController = navController, //
-            colorsInPoolAfterLimit = colorsInPoolAfterLimit, //
-            correctColorsFromPool = correctColorsFromPool, //
+        GameLogic(
+            navController = navController,
+            colorsInPoolAfterLimit = colorsInPoolAfterLimit,
+            correctColorsFromPool = correctColorsFromPool,
             historyRows = historyRows
         )
         Button(
