@@ -68,4 +68,6 @@ dependencies {
 
     implementation("androidx.navigation:navigation-runtime-ktx:2.7.4")
     implementation("androidx.navigation:navigation-compose:2.7.4")
+
+    implementation("androidx.compose.animation:animation:1.0.5")
 }

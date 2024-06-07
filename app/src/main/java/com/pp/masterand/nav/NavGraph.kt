@@ -1,8 +1,13 @@
 package com.pp.masterand.nav
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -20,14 +25,33 @@ fun SetupNavGraph(navController: NavHostController) {
     ) {
 
         val onLogoutButtonClick: () -> Unit = { navController.navigate(route = Screen.LoginScreen.route) }
+        val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition? = {
+            fadeIn(animationSpec = tween(300)) + slideInHorizontally(
+                initialOffsetX = { fullWidth -> -fullWidth },
+                animationSpec = tween(300, easing = LinearOutSlowInEasing)
+            )
+        }
 
-        composable(route = Screen.LoginScreen.route) {
+        val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition? = {
+            fadeOut(animationSpec = tween(300)) + slideOutHorizontally(
+                targetOffsetX = { fullWidth -> fullWidth },
+                animationSpec = tween(300, easing = FastOutLinearInEasing)
+            )
+        }
+
+        composable(
+            route = Screen.LoginScreen.route,
+            enterTransition = enterTransition,
+            exitTransition = exitTransition
+        ) {
             LoginActivity(navController = navController)
         }
 
         composable(
             route = Screen.GameScreen.route + "/{numberOfColorsInPool}",
-            arguments = listOf(navArgument("numberOfColorsInPool") { type = NavType.IntType })
+            arguments = listOf(navArgument("numberOfColorsInPool") { type = NavType.IntType }),
+            enterTransition = enterTransition,
+            exitTransition = exitTransition
         ) { backStackEntry ->
 
             val numberOfColorsInPoolFromLoginActivity = backStackEntry.arguments?.getInt("numberOfColorsInPool")!!
@@ -41,7 +65,9 @@ fun SetupNavGraph(navController: NavHostController) {
 
         composable(
             route = Screen.ProfileScreen.route + "/{scoreNumber}",
-            arguments = listOf(navArgument("scoreNumber") { type = NavType.IntType })
+            arguments = listOf(navArgument("scoreNumber") { type = NavType.IntType }),
+            enterTransition = enterTransition,
+            exitTransition = exitTransition
         ) { backStackEntry ->
 
             val scoreNumber = backStackEntry.arguments?.getInt("scoreNumber")!!

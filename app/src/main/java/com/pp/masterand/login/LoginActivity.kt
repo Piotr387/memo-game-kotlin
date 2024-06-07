@@ -4,16 +4,19 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -36,6 +39,16 @@ fun LoginActivity(
     val isEmailValid = rememberSaveable { mutableStateOf(false) }
     val isNumberValid = rememberSaveable { mutableStateOf(false) }
 
+    val infiniteTransition = rememberInfiniteTransition()
+    val scale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -48,6 +61,7 @@ fun LoginActivity(
             text = "MasterAnd",
             style = MaterialTheme.typography.displayLarge,
             modifier = Modifier.padding(bottom = 48.dp)
+                .scale(scale)
         )
 
         val imagePicker = rememberLauncherForActivityResult(
