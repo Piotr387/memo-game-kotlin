@@ -1,7 +1,14 @@
 package com.pp.masterand.game
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -22,7 +29,6 @@ data class GameRowData(
     val correctColors: List<Color>,
     val historyRows: List<List<Color>>
 )
-
 
 @Composable
 fun GameScreen(
@@ -91,6 +97,7 @@ fun GameScreen(
 }
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun GameLogic(
     navController: NavController,
@@ -104,10 +111,7 @@ fun GameLogic(
     var score by rememberSaveable { mutableIntStateOf(0) }
     var gameWon by rememberSaveable { mutableStateOf(false) }
     var triggerRecomposition by remember { mutableStateOf(false) }
-
-    LaunchedEffect(key1 = triggerRecomposition) {
-        triggerRecomposition = !triggerRecomposition
-    }
+    var list by remember { mutableStateOf(mutableListOf<Int>()) }
 
     Column(
         modifier = Modifier
@@ -126,15 +130,14 @@ fun GameLogic(
             horizontalAlignment = Alignment.CenterHorizontally,
             state = listState
         ) {
-            historyRows.forEach { historyRow ->
-                item {
-                    HistoryRow(historyRow.value, correctColorsFromPool)
-                }
+            items(list, key = {it}) {
+                HistoryRow(historyRows[it]!!, correctColorsFromPool)
             }
             if (gameWon) {
                 item {
                     Button(onClick = {
                         historyRows.clear()
+                        list = historyRows.keys.toMutableList()
                         triggerRecomposition = !triggerRecomposition
                         setUserSelectedColors(List(4) { colorsInPoolAfterLimit[it] })
                         feedbackForUserAboutPickedColors = List(4) { Color.Gray }
@@ -157,7 +160,7 @@ fun GameLogic(
                         },
                         onCheckClick = {
                             addToHistoryMap(historyRows = historyRows, colorHistoryToAdd = userSelectedColors)
-                            triggerRecomposition = !triggerRecomposition
+                            list = historyRows.keys.toMutableList()
                             feedbackForUserAboutPickedColors =
                                 checkColors(userSelectedColors, correctColorsFromPool, Color.Gray)
                             score = countMatches(userSelectedColors, correctColorsFromPool)
