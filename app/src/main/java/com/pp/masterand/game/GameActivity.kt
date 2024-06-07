@@ -35,16 +35,20 @@ fun GameScreen(
         Color.Magenta, Color.White, Color.Black, Color.Gray, Color.LightGray
     )
 
-    // State variables to manage game state
-    var colorsInPoolAfterLimit by rememberSaveable { mutableStateOf(availableColors.shuffled().take(numberOfColorsInPool).map { it.copy() }) }
+    var colorsInPoolAfterLimit by rememberSaveable {
+        mutableStateOf(
+            availableColors.shuffled().take(numberOfColorsInPool).map { it.copy() })
+    }
     var correctColorsFromPool by rememberSaveable { mutableStateOf(selectRandomColors(colorsInPoolAfterLimit)) }
     val historyRows = rememberSaveable { mutableMapOf<Int, List<Color>>() }
+    var userSelectedColors by rememberSaveable { mutableStateOf(List(4) { colorsInPoolAfterLimit[it] }) }
 
     // Define the reset function
     val resetGame = {
         historyRows.clear()
         colorsInPoolAfterLimit = availableColors.shuffled().take(numberOfColorsInPool).map { it.copy() }
         correctColorsFromPool = selectRandomColors(colorsInPoolAfterLimit)
+        userSelectedColors = List(4) { colorsInPoolAfterLimit[it] }
     }
 
     // Effect to handle reset when navigating back
@@ -71,7 +75,9 @@ fun GameScreen(
             navController = navController,
             colorsInPoolAfterLimit = colorsInPoolAfterLimit,
             correctColorsFromPool = correctColorsFromPool,
-            historyRows = historyRows
+            historyRows = historyRows,
+            userSelectedColors = userSelectedColors,
+            setUserSelectedColors = { userSelectedColors = it }
         )
         Button(
             onClick = onLogoutButtonAction,
@@ -84,27 +90,29 @@ fun GameScreen(
     }
 }
 
+
 @Composable
 fun GameLogic(
     navController: NavController,
     colorsInPoolAfterLimit: List<Color>,
     correctColorsFromPool: List<Color>,
-    historyRows: MutableMap<Int, List<Color>>
+    historyRows: MutableMap<Int, List<Color>>,
+    userSelectedColors: List<Color>,
+    setUserSelectedColors: (List<Color>) -> Unit
 ) {
-    var userSelectedColors by rememberSaveable { mutableStateOf(List(4) { colorsInPoolAfterLimit[it] }) }
     var feedbackForUserAboutPickedColors by rememberSaveable { mutableStateOf(List(4) { Color.Gray }) }
     var score by rememberSaveable { mutableIntStateOf(0) }
     var gameWon by rememberSaveable { mutableStateOf(false) }
     var triggerRecomposition by remember { mutableStateOf(false) }
 
-    LaunchedEffect(key1 = triggerRecomposition) { // Replace key1 with a unique identifier if needed
-        triggerRecomposition = !triggerRecomposition  // Toggle the state to trigger recomposition
+    LaunchedEffect(key1 = triggerRecomposition) {
+        triggerRecomposition = !triggerRecomposition
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(bottom = 64.dp), // Space for the Logout button
+            .padding(bottom = 64.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
@@ -112,7 +120,7 @@ fun GameLogic(
             style = MaterialTheme.typography.headlineMedium
         )
 
-        var listState = rememberLazyListState()
+        val listState = rememberLazyListState()
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -128,7 +136,7 @@ fun GameLogic(
                     Button(onClick = {
                         historyRows.clear()
                         triggerRecomposition = !triggerRecomposition
-                        userSelectedColors = List(4) { colorsInPoolAfterLimit[it] }
+                        setUserSelectedColors(List(4) { colorsInPoolAfterLimit[it] })
                         feedbackForUserAboutPickedColors = List(4) { Color.Gray }
                         gameWon = false
                         navController.navigate(route = Screen.ProfileScreen.route + "/$score")
@@ -143,8 +151,9 @@ fun GameLogic(
                         feedbackColors = feedbackForUserAboutPickedColors,
                         clickable = !gameWon,
                         onSelectColorClick = { index ->
-                            userSelectedColors =
+                            setUserSelectedColors(
                                 selectNextAvailableColor(colorsInPoolAfterLimit, userSelectedColors, index)
+                            )
                         },
                         onCheckClick = {
                             addToHistoryMap(historyRows = historyRows, colorHistoryToAdd = userSelectedColors)
@@ -153,7 +162,6 @@ fun GameLogic(
                                 checkColors(userSelectedColors, correctColorsFromPool, Color.Gray)
                             score = countMatches(userSelectedColors, correctColorsFromPool)
                             gameWon = feedbackForUserAboutPickedColors.all { it == Color.Red }
-
                         }
                     )
                 }
@@ -161,6 +169,7 @@ fun GameLogic(
         }
     }
 }
+
 
 // Function to add values to the map with auto-incremented keys
 fun addToHistoryMap(historyRows: MutableMap<Int, List<Color>>, colorHistoryToAdd: List<Color>) {
