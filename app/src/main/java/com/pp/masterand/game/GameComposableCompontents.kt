@@ -1,5 +1,8 @@
 package com.pp.masterand.game
 
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -7,7 +10,7 @@ import androidx.compose.foundation.layout.*
 import com.pp.masterand.R
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,14 +61,49 @@ fun GameRow(
 
 @Composable
 private fun CircularButton(onClick: () -> Unit, color: Color) {
+    var currentColor by remember { mutableStateOf(color) }
+    var animateColorChange by remember { mutableStateOf(false) }
+    var animationFinished by remember { mutableStateOf(false) }
+
+    val animatedColor by animateColorAsState(
+        targetValue = if (animateColorChange && !animationFinished) currentColor.copy(alpha = 0.5f) else currentColor,
+        animationSpec = if (animateColorChange && !animationFinished) {
+            repeatable(
+                iterations = 3,
+                animation = tween(1000),
+                repeatMode = RepeatMode.Reverse
+            )
+        } else {
+            tween(0)
+        },
+        finishedListener = {
+            if (animateColorChange && !animationFinished) {
+                animationFinished = true
+                animateColorChange = false
+            }
+        }
+    )
+
+    LaunchedEffect(color) {
+        if (currentColor != color) {
+            animationFinished = false
+            animateColorChange = true
+            currentColor = color
+        }
+    }
+
     Button(
-        onClick = { onClick() },
+        onClick = {
+            onClick()
+            animationFinished = false
+            animateColorChange = true // Trigger the animation on click
+        },
         modifier = Modifier
             .size(50.dp)
             .background(color = MaterialTheme.colorScheme.background),
         shape = CircleShape,
         colors = ButtonDefaults.buttonColors(
-            containerColor = color,
+            containerColor = animatedColor,
             contentColor = MaterialTheme.colorScheme.onBackground
         ),
         border = BorderStroke(2.dp, MaterialTheme.colorScheme.onBackground)
@@ -73,6 +111,7 @@ private fun CircularButton(onClick: () -> Unit, color: Color) {
         // Empty content, as it's just a circular button
     }
 }
+
 
 @Composable
 private fun SelectableColorsRow(
