@@ -63,31 +63,35 @@ fun GameRow(
 private fun CircularButton(onClick: () -> Unit, color: Color) {
     var currentColor by remember { mutableStateOf(color) }
     var animateColorChange by remember { mutableStateOf(false) }
-    var animationFinished by remember { mutableStateOf(false) }
+    var secondaryAnimationFinished by remember { mutableStateOf(false) }
+
+    val intermediateColor = currentColor.copy(alpha = 0.5f)
 
     val animatedColor by animateColorAsState(
-        targetValue = if (animateColorChange && !animationFinished) currentColor.copy(alpha = 0.5f) else currentColor,
-        animationSpec = if (animateColorChange && !animationFinished) {
+        targetValue = if (animateColorChange) intermediateColor else currentColor,
+        animationSpec = if (animateColorChange) {
             repeatable(
                 iterations = 3,
                 animation = tween(1000),
                 repeatMode = RepeatMode.Reverse
             )
         } else {
-            tween(0)
+            tween(durationMillis = 500) // Duration for smooth transition back
         },
         finishedListener = {
-            if (animateColorChange && !animationFinished) {
-                animationFinished = true
+            if (animateColorChange) {
                 animateColorChange = false
+                secondaryAnimationFinished = false
+            } else {
+                secondaryAnimationFinished = true
             }
         }
     )
 
     LaunchedEffect(color) {
         if (currentColor != color) {
-            animationFinished = false
             animateColorChange = true
+            secondaryAnimationFinished = false
             currentColor = color
         }
     }
@@ -95,8 +99,9 @@ private fun CircularButton(onClick: () -> Unit, color: Color) {
     Button(
         onClick = {
             onClick()
-            animationFinished = false
             animateColorChange = true // Trigger the animation on click
+            secondaryAnimationFinished = false
+            currentColor = color
         },
         modifier = Modifier
             .size(50.dp)
@@ -110,7 +115,15 @@ private fun CircularButton(onClick: () -> Unit, color: Color) {
     ) {
         // Empty content, as it's just a circular button
     }
+
+    // Reset the secondaryAnimationFinished state after the secondary animation completes
+    LaunchedEffect(animatedColor) {
+        if (secondaryAnimationFinished && animatedColor == currentColor) {
+            secondaryAnimationFinished = false
+        }
+    }
 }
+
 
 
 @Composable
