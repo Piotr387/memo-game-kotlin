@@ -2,6 +2,8 @@ package com.pp.masterand.profile
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
@@ -16,9 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.pp.masterand.R
+import com.pp.masterand.data.Score
 import com.pp.masterand.nav.Screen
-
-class Profile(val login: String, val description: String)
 
 @Composable
 fun ProfileCard() {
@@ -53,7 +54,8 @@ fun ProfileWithScoreTable(
     navController: NavController,
     scoreNumber: Int,
     onButtonClicked: () -> Unit,
-    onLogoutButtonAction: () -> Unit
+    onLogoutButtonAction: () -> Unit,
+    scores: List<Score>
 ) {
     Box(
         modifier = Modifier
@@ -75,6 +77,15 @@ fun ProfileWithScoreTable(
                 "Recent score: $scoreNumber",
                 style = MaterialTheme.typography.headlineMedium
             )
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(scores) { score ->
+                    ScoreItem(score)
+                }
+            }
         }
 
         Row(
@@ -97,6 +108,27 @@ fun ProfileWithScoreTable(
     }
 }
 
+@Composable
+fun ScoreItem(score: Score) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(text = "Score ID: ${score.scoreId}")
+            Text(text = "Score: ${score.scoreNumber}")
+            Text(text = "Difficulty: ${score.difficultyLevel}")
+        }
+    }
+}
+
+
 
 @Preview(showBackground = true)
 @Composable
@@ -111,10 +143,10 @@ fun PreviewProfileCard() {
     )
 }
 
-@Preview(showBackground = true)
-@Composable
-fun ProfileWithScoreTablePreview() {
-    val navController = rememberNavController()
-    ProfileWithScoreTable(navController = navController, scoreNumber = 4, onButtonClicked = {}, onLogoutButtonAction = {})
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun ProfileWithScoreTablePreview() {
+//    val navController = rememberNavController()
+//    ProfileWithScoreTable(navController = navController, scoreNumber = 4, onButtonClicked = {}, onLogoutButtonAction = {})
+//}
 

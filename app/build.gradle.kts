@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -70,4 +71,11 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.4")
 
     implementation("androidx.compose.animation:animation:1.0.5")
+
+    //consumeAsStateWithLifecycle
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.2")
+    //Room
+    implementation("androidx.room:room-runtime:2.4.2")
+    ksp("androidx.room:room-compiler:2.4.2")
+    implementation("androidx.room:room-ktx:2.4.2")
 }

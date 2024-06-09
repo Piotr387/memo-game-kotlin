@@ -12,32 +12,39 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import com.pp.masterand.ui.theme.MasterAndTheme
 import androidx.navigation.compose.rememberNavController
+import com.pp.masterand.data.AppContainer
+import com.pp.masterand.data.AppDataContainer
 import com.pp.masterand.login.LoginActivity
 import com.pp.masterand.nav.SetupNavGraph
 
 class MainActivity : ComponentActivity() {
 
     lateinit var navController: NavHostController
+    lateinit var container: AppContainer
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        container = AppDataContainer(this)
         setContent {
             MasterAndTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     navController = rememberNavController()
                     //Funkcja odpowiedziana za powiązania między kolejnymi ekranami
-                    SetupNavGraph(navController = navController)
+                    SetupNavGraph(
+                        navController = navController,
+                        appContainer = container
+                    )
                 }
             }
         }
     }
 }
 
-@Preview
-@Composable
-fun MainActivityPreview() {
-    // Create a NavController instance (for preview purposes only)
-    val navController = rememberNavController()
-    LoginActivity(navController = navController)
-}
+//@Preview
+//@Composable
+//fun MainActivityPreview() {
+//    // Create a NavController instance (for preview purposes only)
+//    val navController = rememberNavController()
+//    LoginActivity(navController = navController)
+//}

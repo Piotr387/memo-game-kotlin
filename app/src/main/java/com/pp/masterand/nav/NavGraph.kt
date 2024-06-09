@@ -4,24 +4,27 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.pp.masterand.data.*
 import com.pp.masterand.game.GameScreen
 import com.pp.masterand.login.LoginActivity
 import com.pp.masterand.profile.ProfileWithScoreTable
 
 @Composable
-fun SetupNavGraph(navController: NavHostController) {
+fun SetupNavGraph(navController: NavHostController, appContainer: AppContainer) {
+    val profileViewModel: ProfileViewModel = viewModel(factory = ProfileViewModelFactory(appContainer.playersRepository, appContainer.scoresRepository))
+    val gameViewModel: GameViewModel = viewModel(factory = GameViewModelFactory(appContainer.scoresRepository))
+
     NavHost(
         navController = navController,
-        startDestination = LOGIN_ROUTE
+        startDestination = Screen.LoginScreen.route
     ) {
 
         val onLogoutButtonClick: () -> Unit = { navController.navigate(route = Screen.LoginScreen.route) }
@@ -44,22 +47,28 @@ fun SetupNavGraph(navController: NavHostController) {
             enterTransition = enterTransition,
             exitTransition = exitTransition
         ) {
-            LoginActivity(navController = navController)
+            LoginActivity(navController = navController, profileViewModel = profileViewModel)
         }
 
         composable(
-            route = Screen.GameScreen.route + "/{numberOfColorsInPool}",
-            arguments = listOf(navArgument("numberOfColorsInPool") { type = NavType.IntType }),
+            route = Screen.GameScreen.route + "/{numberOfColorsInPool}/{playerId}",
+            arguments = listOf(
+                navArgument("numberOfColorsInPool") { type = NavType.IntType },
+                navArgument("playerId") { type = NavType.LongType }
+            ),
             enterTransition = enterTransition,
             exitTransition = exitTransition
         ) { backStackEntry ->
 
             val numberOfColorsInPoolFromLoginActivity = backStackEntry.arguments?.getInt("numberOfColorsInPool")!!
+            val playerId = backStackEntry.arguments?.getLong("playerId")!!
 
             GameScreen(
                 navController = navController,
                 numberOfColorsInPool = numberOfColorsInPoolFromLoginActivity,
-                onLogoutButtonAction = onLogoutButtonClick
+                onLogoutButtonAction = onLogoutButtonClick,
+                gameViewModel = gameViewModel,
+                playerId = playerId
             )
         }
 
@@ -72,11 +81,14 @@ fun SetupNavGraph(navController: NavHostController) {
 
             val scoreNumber = backStackEntry.arguments?.getInt("scoreNumber")!!
 
+            val scores by profileViewModel.scores.collectAsState()
+
             ProfileWithScoreTable(
                 navController = navController,
                 scoreNumber = scoreNumber,
                 onButtonClicked = { navController.navigateUp() },
-                onLogoutButtonAction = onLogoutButtonClick
+                onLogoutButtonAction = onLogoutButtonClick,
+                scores = scores
             )
         }
     }

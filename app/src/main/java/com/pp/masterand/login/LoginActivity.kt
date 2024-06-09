@@ -18,17 +18,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import com.pp.masterand.data.ProfileViewModel
 import com.pp.masterand.nav.Screen
-import com.pp.masterand.profile.Profile
 
 
 @Composable
 fun LoginActivity(
-    navController: NavController
+    navController: NavController,
+    profileViewModel: ProfileViewModel
 ) {
     val profileImageUri = rememberSaveable { mutableStateOf<Uri?>(null) }
     val name = rememberSaveable { mutableStateOf("") }
@@ -106,38 +105,44 @@ fun LoginActivity(
             value = number,
             label = "Number",
             keyboardType = KeyboardType.Number,
-            supportingText = "Must be in range <5,10>", // Clearer message
+            supportingText = "Must be in range <5,10>",
             validator = { text ->
                 try {
-                    val num = text.toIntOrNull() // Handle non-numeric input
-                    if (IntRange(5, 10).contains(num)) {
+                    val num = text.toIntOrNull()
+                    if (num != null && num in 5..10) {
                         isNumberValid.value = true
-                        return@OutlinedTextFieldWithError true // Valid number
+                        return@OutlinedTextFieldWithError true
                     }
                 } catch (e: NumberFormatException) {
                     isNumberValid.value = false
-                    return@OutlinedTextFieldWithError false // Invalid number
+                    return@OutlinedTextFieldWithError false
                 }
                 isNumberValid.value = false
-                return@OutlinedTextFieldWithError false // Invalid number
+                return@OutlinedTextFieldWithError false
             }
         )
+
         if (isNameValid.value && isEmailValid.value && isNumberValid.value) {
             StartGameButton {
-                navController.navigate(Screen.GameScreen.route + "/${number.value.toInt()}")
+                profileViewModel.addOrUpdatePlayer(name.value, email.value)
+                navController.currentBackStackEntry?.let {
+                    profileViewModel.playerId.observe(it) { playerId ->
+                        navController.navigate(Screen.GameScreen.route + "/${number.value.toInt()}/$playerId")
+                    }
+                }
             }
         } else {
             StartGameButton {
                 navController.navigate(Screen.GameScreen.route + "/${5}")
             }
         }
-
     }
 }
 
-@Preview
-@Composable
-fun ProfileScreenInitialPreview() {
-    val navController = rememberNavController()
-    LoginActivity(navController = navController)
-}
+//
+//@Preview
+//@Composable
+//fun ProfileScreenInitialPreview() {
+//    val navController = rememberNavController()
+//    LoginActivity(navController = navController)
+//}

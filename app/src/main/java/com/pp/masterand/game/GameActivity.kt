@@ -1,7 +1,9 @@
 package com.pp.masterand.game
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -11,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -22,19 +25,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.pp.masterand.data.GameViewModel
 import com.pp.masterand.nav.Screen
-
-data class GameRowData(
-    var availableColors: List<Color>,
-    val correctColors: List<Color>,
-    val historyRows: List<List<Color>>
-)
 
 @Composable
 fun GameScreen(
     navController: NavController,
     numberOfColorsInPool: Int,
-    onLogoutButtonAction: () -> Unit
+    onLogoutButtonAction: () -> Unit,
+    gameViewModel: GameViewModel,
+    playerId: Long
 ) {
     val availableColors = listOf(
         Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Cyan,
@@ -49,7 +49,6 @@ fun GameScreen(
     val historyRows = rememberSaveable { mutableMapOf<Int, List<Color>>() }
     var userSelectedColors by rememberSaveable { mutableStateOf(List(4) { colorsInPoolAfterLimit[it] }) }
 
-    // Define the reset function
     val resetGame = {
         historyRows.clear()
         colorsInPoolAfterLimit = availableColors.shuffled().take(numberOfColorsInPool).map { it.copy() }
@@ -57,14 +56,12 @@ fun GameScreen(
         userSelectedColors = List(4) { colorsInPoolAfterLimit[it] }
     }
 
-    // Effect to handle reset when navigating back
     DisposableEffect(Unit) {
         onDispose {
             resetGame()
         }
     }
 
-    // Call the reset function directly if needed
     LaunchedEffect(navController.currentBackStackEntry) {
         val backStackEntry = navController.previousBackStackEntry
         if (backStackEntry?.destination?.route == Screen.ProfileScreen.route) {
@@ -83,7 +80,9 @@ fun GameScreen(
             correctColorsFromPool = correctColorsFromPool,
             historyRows = historyRows,
             userSelectedColors = userSelectedColors,
-            setUserSelectedColors = { userSelectedColors = it }
+            setUserSelectedColors = { userSelectedColors = it },
+            gameViewModel = gameViewModel,
+            playerId = playerId
         )
         Button(
             onClick = onLogoutButtonAction,
@@ -105,7 +104,9 @@ fun GameLogic(
     correctColorsFromPool: List<Color>,
     historyRows: MutableMap<Int, List<Color>>,
     userSelectedColors: List<Color>,
-    setUserSelectedColors: (List<Color>) -> Unit
+    setUserSelectedColors: (List<Color>) -> Unit,
+    gameViewModel: GameViewModel,
+    playerId: Long
 ) {
     var feedbackForUserAboutPickedColors by rememberSaveable { mutableStateOf(List(4) { Color.Gray }) }
     var score by rememberSaveable { mutableIntStateOf(0) }
@@ -130,10 +131,23 @@ fun GameLogic(
             horizontalAlignment = Alignment.CenterHorizontally,
             state = listState
         ) {
-            items(list, key = {it}) {
-                HistoryRow(historyRows[it]!!, correctColorsFromPool)
+            items(list, key = { it }) {
+                AnimatedVisibility(
+                    visible = true, // Ensure this is true to animate the initial appearing
+                    enter = slideInVertically(initialOffsetY = { -it }),
+                    modifier = Modifier.animateContentSize(
+
+                    )
+                ) {
+                    Card(
+                        modifier = Modifier.animateContentSize()
+                    ) {
+                        HistoryRow(historyRows[it]!!, correctColorsFromPool)
+                    }
+                }
             }
             if (gameWon) {
+                gameViewModel.addScore(playerId, score.toLong(), difficultyLevel = 1)
                 item {
                     Button(onClick = {
                         historyRows.clear()
@@ -226,14 +240,14 @@ fun HistoryRow(historyRow: List<Color>, correctColorsFromPool: List<Color>) {
 //    )
 //}
 
-@Preview(showBackground = true)
-@Composable
-fun GameScreenPreview() {
-    // Create a NavController instance (for preview purposes only)
-    val navController = rememberNavController()
-
-    // Call GameScreen with the NavController parameter
-    GameScreen(navController = navController, numberOfColorsInPool = 5, onLogoutButtonAction = {})
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun GameScreenPreview() {
+//    // Create a NavController instance (for preview purposes only)
+//    val navController = rememberNavController()
+//
+//    // Call GameScreen with the NavController parameter
+//    GameScreen(navController = navController, numberOfColorsInPool = 5, onLogoutButtonAction = {})
+//}
 
 
