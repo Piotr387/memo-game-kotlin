@@ -131,10 +131,6 @@ fun LoginActivity(
                     }
                 }
             }
-        } else {
-            StartGameButton {
-                navController.navigate(Screen.GameScreen.route + "/${5}")
-            }
         }
     }
 }

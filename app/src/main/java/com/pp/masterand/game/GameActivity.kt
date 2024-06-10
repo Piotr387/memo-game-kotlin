@@ -1,5 +1,6 @@
 package com.pp.masterand.game
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -144,8 +145,6 @@ fun GameLogic(
                 }
             }
             if (gameWon) {
-                val difficulty = colorsInPoolAfterLimit.size - 4
-                gameViewModel.addScore(playerId, score.toLong(), difficultyLevel = difficulty.toLong())
                 item {
                     Button(onClick = {
                         historyRows.clear()
@@ -177,6 +176,11 @@ fun GameLogic(
                                 checkColors(userSelectedColors, correctColorsFromPool, Color.Gray)
                             score = list.size
                             gameWon = feedbackForUserAboutPickedColors.all { it == Color.Red }
+                            if (gameWon) {
+                                val difficulty = colorsInPoolAfterLimit.size - 4
+                                gameViewModel.addScore(playerId, score.toLong(), difficultyLevel = difficulty.toLong())
+                                Log.d("GameLogic", "Score added: $difficulty for playerId: $playerId")
+                            }
                         }
                     )
                 }
