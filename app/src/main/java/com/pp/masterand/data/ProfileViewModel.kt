@@ -1,10 +1,13 @@
 package com.pp.masterand.data
 
 import androidx.lifecycle.*
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class ProfileViewModel(private val playersRepository: PlayersRepository, private val scoresRepository: ScoresRepository) : ViewModel() {
+@HiltViewModel
+class ProfileViewModel @Inject constructor(private val playersRepository: PlayersRepository, private val scoresRepository: ScoresRepository) : ViewModel() {
     private val _playerId = MutableLiveData<Long>()
     val playerId: LiveData<Long> get() = _playerId
     private val _player = MutableStateFlow<Player?>(null)
@@ -48,16 +51,15 @@ class ProfileViewModel(private val playersRepository: PlayersRepository, private
     }
 }
 
-
-class ProfileViewModelFactory(
-    private val playersRepository: PlayersRepository,
-    private val scoresRepository: ScoresRepository
-) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(ProfileViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return ProfileViewModel(playersRepository, scoresRepository) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
-    }
-}
+//class ProfileViewModelFactory(
+//    private val playersRepository: PlayersRepository,
+//    private val scoresRepository: ScoresRepository
+//) : ViewModelProvider.Factory {
+//    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+//        if (modelClass.isAssignableFrom(ProfileViewModel::class.java)) {
+//            @Suppress("UNCHECKED_CAST")
+//            return ProfileViewModel(playersRepository, scoresRepository) as T
+//        }
+//        throw IllegalArgumentException("Unknown ViewModel class")
+//    }
+//}

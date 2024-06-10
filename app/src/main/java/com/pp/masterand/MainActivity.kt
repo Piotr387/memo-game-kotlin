@@ -16,7 +16,10 @@ import com.pp.masterand.data.AppContainer
 import com.pp.masterand.data.AppDataContainer
 import com.pp.masterand.login.LoginActivity
 import com.pp.masterand.nav.SetupNavGraph
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.HiltAndroidApp
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     lateinit var navController: NavHostController
@@ -24,7 +27,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        container = AppDataContainer(this)
+        //container = AppDataContainer(this)
         setContent {
             MasterAndTheme {
                 // A surface container using the 'background' color from the theme
@@ -32,8 +35,8 @@ class MainActivity : ComponentActivity() {
                     navController = rememberNavController()
                     //Funkcja odpowiedziana za powiązania między kolejnymi ekranami
                     SetupNavGraph(
-                        navController = navController,
-                        appContainer = container
+                        navController = navController //
+                    //    , appContainer = container
                     )
                 }
             }

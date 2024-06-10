@@ -5,6 +5,7 @@ import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.*
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
@@ -18,9 +19,16 @@ import com.pp.masterand.login.LoginActivity
 import com.pp.masterand.profile.ProfileWithScoreTable
 
 @Composable
-fun SetupNavGraph(navController: NavHostController, appContainer: AppContainer) {
-    val profileViewModel: ProfileViewModel = viewModel(factory = ProfileViewModelFactory(appContainer.playersRepository, appContainer.scoresRepository))
-    val gameViewModel: GameViewModel = viewModel(factory = GameViewModelFactory(appContainer.scoresRepository))
+fun SetupNavGraph(
+    navController: NavHostController //
+//    , appContainer: AppContainer
+) {
+
+    val profileViewModel: ProfileViewModel = hiltViewModel()
+    val gameViewModel: GameViewModel = hiltViewModel()
+
+//    val profileViewModel: ProfileViewModel = viewModel(factory = ProfileViewModelFactory(appContainer.playersRepository, appContainer.scoresRepository))
+//    val gameViewModel: GameViewModel = viewModel(factory = GameViewModelFactory(appContainer.scoresRepository))
 
     NavHost(
         navController = navController,
