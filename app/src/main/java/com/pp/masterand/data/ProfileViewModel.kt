@@ -1,18 +1,33 @@
 package com.pp.masterand.data
 
 import androidx.lifecycle.*
-import com.pp.masterand.data.PlayersRepository
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class ProfileViewModel(private val playersRepository: PlayersRepository, private val scoresRepository: ScoresRepository) : ViewModel() {
     private val _playerId = MutableLiveData<Long>()
     val playerId: LiveData<Long> get() = _playerId
+    private val _player = MutableStateFlow<Player?>(null)
+    val player: StateFlow<Player?> = _player.asStateFlow()
 
-    val scores: StateFlow<List<Score>> = scoresRepository.getAllScoresStream()
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    private val _scores = MutableStateFlow<List<Score>>(emptyList())
+    val scores: StateFlow<List<Score>> = _scores.asStateFlow()
+
+    fun getScoresByPlayer(playerId: Long) {
+        viewModelScope.launch {
+            scoresRepository.getScoresByPlayerStream(playerId).collect { playerScores ->
+                _scores.value = playerScores
+            }
+        }
+    }
+
+    fun getPlayerDetails(playerId: Long) {
+        viewModelScope.launch {
+            playersRepository.getPlayerStream(playerId).collect { playerDetails ->
+                _player.value = playerDetails
+            }
+        }
+    }
 
     fun addOrUpdatePlayer(name: String, email: String) {
         viewModelScope.launch {

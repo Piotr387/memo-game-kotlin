@@ -22,7 +22,7 @@ import com.pp.masterand.data.Score
 import com.pp.masterand.nav.Screen
 
 @Composable
-fun ProfileCard() {
+fun ProfileCard(name: String, email: String) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -40,14 +40,15 @@ fun ProfileCard() {
             )
             Spacer(modifier = Modifier.width(16.dp))
             Column {
-                Text(text = "Login: profile.login")
+                Text("Login: $name")
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "Description: profile.description")
+                Text("Email: $email")
             }
 
         }
     }
 }
+
 
 @Composable
 fun ProfileWithScoreTable(
@@ -55,7 +56,9 @@ fun ProfileWithScoreTable(
     scoreNumber: Int,
     onButtonClicked: () -> Unit,
     onLogoutButtonAction: () -> Unit,
-    scores: List<Score>
+    scores: List<Score>,
+    name: String,
+    email: String
 ) {
     Box(
         modifier = Modifier
@@ -68,7 +71,7 @@ fun ProfileWithScoreTable(
                 .padding(bottom = 64.dp), // Space for the Logout button
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            ProfileCard()
+            ProfileCard(name = name, email = email)
             Text(
                 "Results",
                 style = MaterialTheme.typography.headlineLarge
@@ -121,7 +124,6 @@ fun ScoreItem(score: Score) {
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(text = "Score ID: ${score.scoreId}")
             Text(text = "Score: ${score.scoreNumber}")
             Text(text = "Difficulty: ${score.difficultyLevel}")
         }
@@ -130,18 +132,18 @@ fun ScoreItem(score: Score) {
 
 
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewProfileCard() {
-    val navController = rememberNavController()
-    ProfileCard(
-//        navController = navController
-//        profile = Profile(
-//            login = "Gentleman",
-//            description = "You had my curiosity... but now you have my attention."
-//        )
-    )
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun PreviewProfileCard() {
+//    val navController = rememberNavController()
+//    ProfileCard(
+////        navController = navController
+////        profile = Profile(
+////            login = "Gentleman",
+////            description = "You had my curiosity... but now you have my attention."
+////        )
+//    )
+//}
 
 //@Preview(showBackground = true)
 //@Composable

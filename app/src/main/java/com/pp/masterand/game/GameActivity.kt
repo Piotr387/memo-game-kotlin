@@ -95,7 +95,6 @@ fun GameScreen(
     }
 }
 
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun GameLogic(
@@ -135,9 +134,7 @@ fun GameLogic(
                 AnimatedVisibility(
                     visible = true, // Ensure this is true to animate the initial appearing
                     enter = slideInVertically(initialOffsetY = { -it }),
-                    modifier = Modifier.animateContentSize(
-
-                    )
+                    modifier = Modifier.animateContentSize()
                 ) {
                     Card(
                         modifier = Modifier.animateContentSize()
@@ -147,7 +144,8 @@ fun GameLogic(
                 }
             }
             if (gameWon) {
-                gameViewModel.addScore(playerId, score.toLong(), difficultyLevel = 1)
+                val difficulty = colorsInPoolAfterLimit.size - 4
+                gameViewModel.addScore(playerId, score.toLong(), difficultyLevel = difficulty.toLong())
                 item {
                     Button(onClick = {
                         historyRows.clear()
@@ -156,7 +154,7 @@ fun GameLogic(
                         setUserSelectedColors(List(4) { colorsInPoolAfterLimit[it] })
                         feedbackForUserAboutPickedColors = List(4) { Color.Gray }
                         gameWon = false
-                        navController.navigate(route = Screen.ProfileScreen.route + "/$score")
+                        navController.navigate(route = Screen.ProfileScreen.route + "/$score/$playerId")
                     }) {
                         Text("High Score Table")
                     }
@@ -177,7 +175,7 @@ fun GameLogic(
                             list = historyRows.keys.toMutableList()
                             feedbackForUserAboutPickedColors =
                                 checkColors(userSelectedColors, correctColorsFromPool, Color.Gray)
-                            score = countMatches(userSelectedColors, correctColorsFromPool)
+                            score = list.size
                             gameWon = feedbackForUserAboutPickedColors.all { it == Color.Red }
                         }
                     )
@@ -186,6 +184,7 @@ fun GameLogic(
         }
     }
 }
+
 
 
 // Function to add values to the map with auto-incremented keys

@@ -15,7 +15,7 @@ interface PlayerDao {
     //są też adnotacje @Delete, @Update...
     //metoda, która zwraca Flow nie musi być wstrzymująca
     @Query("SELECT * from players WHERE playerId = :playerId")
-    fun getPlayerStream(playerId: Int): Flow<Player>
+    fun getPlayerStream(playerId: Long): Flow<Player>
 
     //metoda, która nie zwraca Flow musi być wstrzymująca
     @Query("SELECT * from players WHERE email = :email")
@@ -36,7 +36,7 @@ interface PlayerScoreDao {
 interface ScoreDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(score: Score): Long
-
+    
     @Query("SELECT * FROM scores ORDER BY scoreNumber ASC")
     fun getAllScores(): Flow<List<Score>>
 

@@ -71,8 +71,8 @@ private fun CircularButton(onClick: () -> Unit, color: Color) {
         targetValue = if (animateColorChange) intermediateColor else currentColor,
         animationSpec = if (animateColorChange) {
             repeatable(
-                iterations = 3,
-                animation = tween(1000),
+                iterations = 1,
+                animation = tween(200),
                 repeatMode = RepeatMode.Reverse
             )
         } else {

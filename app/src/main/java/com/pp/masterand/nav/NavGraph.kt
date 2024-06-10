@@ -73,23 +73,34 @@ fun SetupNavGraph(navController: NavHostController, appContainer: AppContainer) 
         }
 
         composable(
-            route = Screen.ProfileScreen.route + "/{scoreNumber}",
-            arguments = listOf(navArgument("scoreNumber") { type = NavType.IntType }),
+            route = Screen.ProfileScreen.route + "/{scoreNumber}/{playerId}",
+            arguments = listOf(
+                navArgument("scoreNumber") { type = NavType.IntType },
+                navArgument("playerId") { type = NavType.LongType }
+            ),
             enterTransition = enterTransition,
             exitTransition = exitTransition
         ) { backStackEntry ->
 
             val scoreNumber = backStackEntry.arguments?.getInt("scoreNumber")!!
+            val playerId = backStackEntry.arguments?.getLong("playerId")!!
 
+            profileViewModel.getScoresByPlayer(playerId)
+            profileViewModel.getPlayerDetails(playerId)
             val scores by profileViewModel.scores.collectAsState()
+            val player by profileViewModel.player.collectAsState()
 
-            ProfileWithScoreTable(
-                navController = navController,
-                scoreNumber = scoreNumber,
-                onButtonClicked = { navController.navigateUp() },
-                onLogoutButtonAction = onLogoutButtonClick,
-                scores = scores
-            )
+            player?.let {
+                ProfileWithScoreTable(
+                    navController = navController,
+                    scoreNumber = scoreNumber,
+                    onButtonClicked = { navController.navigateUp() },
+                    onLogoutButtonAction = onLogoutButtonClick,
+                    scores = scores,
+                    name = it.name,
+                    email = it.email
+                )
+            }
         }
     }
 }
