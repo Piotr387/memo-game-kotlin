@@ -1,17 +1,16 @@
 package com.pp.masterand.game
 
 import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.*
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -114,6 +113,8 @@ fun GameLogic(
     var triggerRecomposition by remember { mutableStateOf(false) }
     var list by remember { mutableStateOf(mutableListOf<Int>()) }
 
+    val listState = rememberLazyListState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -125,22 +126,55 @@ fun GameLogic(
             style = MaterialTheme.typography.headlineMedium
         )
 
-        val listState = rememberLazyListState()
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             state = listState
         ) {
-            items(list, key = { it }) {
+            items(list, key = { it }) { index ->
                 AnimatedVisibility(
-                    visible = true, // Ensure this is true to animate the initial appearing
-                    enter = slideInVertically(initialOffsetY = { -it }),
-                    modifier = Modifier.animateContentSize()
+                    visible = true,
+                    enter = expandVertically(
+                        animationSpec = tween(
+                            durationMillis = 2000,
+                            easing = LinearOutSlowInEasing,
+                        )
+                    ) + fadeIn(
+                        animationSpec = tween(
+                            durationMillis = 2000,
+                            easing = LinearOutSlowInEasing,
+                        )
+                    ),
+                    exit = shrinkVertically(
+                        animationSpec = tween(
+                            durationMillis = 2000,
+                            easing = LinearOutSlowInEasing,
+                        )
+                    ) + fadeOut(
+                        animationSpec = tween(
+                            durationMillis = 2000,
+                            easing = LinearOutSlowInEasing,
+                        )
+                    ),
+                    modifier = Modifier.animateItemPlacement(
+                        animationSpec = tween(
+                            durationMillis = 2000,
+                            easing = LinearOutSlowInEasing,
+                        )
+                    )
                 ) {
                     Card(
-                        modifier = Modifier.animateContentSize()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                            .animateItemPlacement(
+                                animationSpec = tween(
+                                    durationMillis = 2000,
+                                    easing = LinearOutSlowInEasing,
+                                )
+                            )
                     ) {
-                        HistoryRow(historyRows[it]!!, correctColorsFromPool)
+                        HistoryRow(historyRows[index]!!, correctColorsFromPool)
                     }
                 }
             }
@@ -185,6 +219,11 @@ fun GameLogic(
                     )
                 }
             }
+        }
+
+        // Scroll to the top when a new item is added
+        LaunchedEffect(list.size) {
+            listState.animateScrollToItem(list.size)
         }
     }
 }
