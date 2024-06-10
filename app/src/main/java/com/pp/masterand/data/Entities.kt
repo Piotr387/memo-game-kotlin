@@ -17,7 +17,8 @@ data class Player(
     @PrimaryKey(autoGenerate = true)
     val playerId: Long = 0,
     val name: String,
-    val email: String
+    val email: String,
+    val imageUri: String? = null // New field for storing image URI
 )
 
 data class PlayerWithScore(

@@ -32,18 +32,18 @@ class ProfileViewModel @Inject constructor(private val playersRepository: Player
         }
     }
 
-    fun addOrUpdatePlayer(name: String, email: String) {
+    fun addOrUpdatePlayer(player: Player) {
         viewModelScope.launch {
-            val existingPlayers = playersRepository.getPlayersByEmail(email)
+            val existingPlayers = playersRepository.getPlayersByEmail(player.email)
             if (existingPlayers.isNotEmpty()) {
                 val player = existingPlayers[0]
-                if (player.name != name) {
-                    val updatedPlayer = player.copy(name = name)
+                if (player.name != player.name) {
+                    val updatedPlayer = player.copy(name = player.name, imageUri = player.imageUri)
                     playersRepository.insertPlayer(updatedPlayer)
                 }
                 _playerId.value = player.playerId
             } else {
-                val newPlayer = Player(name = name, email = email)
+                val newPlayer = Player(name = player.name, email = player.email, imageUri = player.imageUri)
                 val newPlayerId = playersRepository.insertPlayer(newPlayer)
                 _playerId.value = newPlayerId
             }

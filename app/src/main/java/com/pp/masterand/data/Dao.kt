@@ -1,9 +1,6 @@
 package com.pp.masterand.data
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -20,6 +17,9 @@ interface PlayerDao {
     //metoda, która nie zwraca Flow musi być wstrzymująca
     @Query("SELECT * from players WHERE email = :email")
     suspend fun getPlayersByEmail(email: String): List<Player>
+
+    @Update
+    suspend fun update(player: Player)
 }
 
 @Dao
@@ -36,7 +36,7 @@ interface PlayerScoreDao {
 interface ScoreDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(score: Score): Long
-    
+
     @Query("SELECT * FROM scores ORDER BY scoreNumber ASC")
     fun getAllScores(): Flow<List<Score>>
 

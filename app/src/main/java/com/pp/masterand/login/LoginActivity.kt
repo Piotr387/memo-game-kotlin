@@ -20,6 +20,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.pp.masterand.data.Player
 import com.pp.masterand.data.ProfileViewModel
 import com.pp.masterand.nav.Screen
 
@@ -108,8 +109,8 @@ fun LoginActivity(
             supportingText = "Must be in range <5,10>",
             validator = { text ->
                 try {
-                    val num = text.toIntOrNull()
-                    if (num != null && num in 5..10) {
+                    val num = text.toIntOrNull() // Handle non-numeric input
+                    if (IntRange(5, 10).contains(num)) {
                         isNumberValid.value = true
                         return@OutlinedTextFieldWithError true
                     }
@@ -124,7 +125,13 @@ fun LoginActivity(
 
         if (isNameValid.value && isEmailValid.value && isNumberValid.value) {
             StartGameButton {
-                profileViewModel.addOrUpdatePlayer(name.value, email.value)
+                profileViewModel.addOrUpdatePlayer(
+                    Player(
+                        name = name.value,
+                        email = email.value,
+                        imageUri = profileImageUri.value?.toString()
+                    )
+                )
                 navController.currentBackStackEntry?.let {
                     profileViewModel.playerId.observe(it) { playerId ->
                         navController.navigate(Screen.GameScreen.route + "/${number.value.toInt()}/$playerId")
@@ -134,6 +141,7 @@ fun LoginActivity(
         }
     }
 }
+
 
 //
 //@Preview

@@ -17,12 +17,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberImagePainter
 import com.pp.masterand.R
 import com.pp.masterand.data.Score
 import com.pp.masterand.nav.Screen
 
 @Composable
-fun ProfileCard(name: String, email: String) {
+fun ProfileCard(name: String, email: String, imageUri: String?) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -32,22 +33,30 @@ fun ProfileCard(name: String, email: String) {
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val profileImage: Painter = painterResource(id = R.drawable.ic_launcher_foreground)
-            Image(
-                painter = profileImage,
-                contentDescription = "Profile Image",
-                modifier = Modifier.size(64.dp)
-            )
+            if (imageUri != null) {
+                Image(
+                    painter = rememberImagePainter(imageUri),
+                    contentDescription = "Profile Image",
+                    modifier = Modifier.size(64.dp)
+                )
+            } else {
+                val profileImage: Painter = painterResource(id = R.drawable.ic_launcher_foreground)
+                Image(
+                    painter = profileImage,
+                    contentDescription = "Profile Image",
+                    modifier = Modifier.size(64.dp)
+                )
+            }
             Spacer(modifier = Modifier.width(16.dp))
             Column {
-                Text("Login: $name")
+                Text(text = name)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("Email: $email")
+                Text(text = email)
             }
-
         }
     }
 }
+
 
 
 @Composable
@@ -58,7 +67,8 @@ fun ProfileWithScoreTable(
     onLogoutButtonAction: () -> Unit,
     scores: List<Score>,
     name: String,
-    email: String
+    email: String,
+    imageUri: String?
 ) {
     Box(
         modifier = Modifier
@@ -71,7 +81,7 @@ fun ProfileWithScoreTable(
                 .padding(bottom = 64.dp), // Space for the Logout button
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            ProfileCard(name = name, email = email)
+            ProfileCard(name = name, email = email, imageUri = imageUri)
             Text(
                 "Results",
                 style = MaterialTheme.typography.headlineLarge

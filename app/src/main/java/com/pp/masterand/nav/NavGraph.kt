@@ -106,7 +106,8 @@ fun SetupNavGraph(
                     onLogoutButtonAction = onLogoutButtonClick,
                     scores = scores,
                     name = it.name,
-                    email = it.email
+                    email = it.email,
+                    imageUri = it.imageUri
                 )
             }
         }
